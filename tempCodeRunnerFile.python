@@ -1,0 +1,54 @@
+from PIL import Image
+import os
+
+# Define the target background color (hex #06402b)
+target_bg_color = (6, 64, 43)  # RGB representation of hex #06402b
+
+def change_background(input_folder, output_folder):
+    # Check if the output folder exists, create if not
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    
+    # Iterate over all the images in the input folder
+    for image_name in os.listdir(input_folder):
+        image_path = os.path.join(input_folder, image_name)
+        
+        # Open the image file
+        try:
+            img = Image.open(image_path)
+        except Exception as e:
+            print(f"Error opening image {image_name}: {e}")
+            continue
+        
+        # Convert image to RGBA if not already in that mode
+        img = img.convert("RGBA")
+        
+        # Get image data
+        data = img.getdata()
+        
+        # Create a new list to store the modified pixels
+        new_data = []
+        
+        for pixel in data:
+            # If the pixel is black (RGB: 0, 0, 0), replace with target_bg_color
+            if pixel[:3] == (0, 0, 0):  # Black pixels
+                new_data.append(target_bg_color + (255,))  # RGBA (target_bg_color with full opacity)
+            else:
+                new_data.append(pixel)  # Keep non-black pixels unchanged
+        
+        # Update image with new pixel data
+        img.putdata(new_data)
+
+        # Convert back to RGB (remove alpha channel) before saving as JPEG
+        if image_name.lower().endswith('.jpg') or image_name.lower().endswith('.jpeg'):
+            img = img.convert("RGB")  # Convert RGBA to RGB for JPEG format
+        
+        # Save the modified image to the output folder
+        output_path = os.path.join(output_folder, image_name)
+        img.save(output_path)
+        print(f"Processed and saved {image_name} to {output_path}")
+
+# Example usage
+input_folder = 'F:/Project Final BTECH/Kolam_final'  # Replace with the path to your input folder
+output_folder = 'F:/Project Final BTECH/APPTESTIMAGES/Kolam'  # Replace with the path to your output folder
+change_background(input_folder, output_folder)
